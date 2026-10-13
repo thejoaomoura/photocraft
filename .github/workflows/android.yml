@@ -6,7 +6,7 @@ name: Android
 
 on:
   push:
-    branches: [main]
+    branches: [main, "feat/android-*"]
     paths:
       - "crates/**"
       - "Cargo.toml"
