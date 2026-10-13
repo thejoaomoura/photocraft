@@ -1,0 +1,41 @@
+[package]
+name = "photocraft-mobile-ffi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+description = "Kotlin/Android bindings (UniFFI) over the PhotoCraft engine, for the lightweight mobile app"
+
+[lib]
+# cdylib: the `.so` packaged in the APK; lib: tests and `uniffi-bindgen`.
+crate-type = ["cdylib", "lib"]
+name = "photocraft_mobile"
+
+# UniFFI's generated scaffolding (`lib.rs`) is `unsafe` FFI glue, so this crate can't inherit the
+# workspace's `unsafe_code = "forbid"`. The hand-written logic lives in `core.rs`, which carries
+# `#![forbid(unsafe_code)]` itself (same isolation as `photocraft-tablet`).
+[lints.rust]
+unsafe_code = "allow"
+
+[lints.clippy]
+dbg_macro = "warn"
+todo = "warn"
+
+[dependencies]
+photocraft-engine = { workspace = true }
+photocraft-io = { workspace = true }
+photocraft-format = { workspace = true }
+photocraft-compose = { workspace = true }
+photocraft-doc = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+uniffi = "0.32"
+
+[features]
+# The Kotlin binding generator (host tool only; keeps it out of the Android `.so` build).
+bindgen = ["uniffi/cli"]
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "src/bin/uniffi-bindgen.rs"
+required-features = ["bindgen"]

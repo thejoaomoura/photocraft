@@ -64,6 +64,8 @@ pub const TABLE: &[(&str, Class)] = &[
     ("ui-egui", Class::Layer(6)),
     ("automation", Class::Layer(6)),
     ("platform", Class::Layer(6)),
+    // Kotlin/Android bindings (UniFFI) over the engine, for the lightweight mobile app.
+    ("mobile-ffi", Class::Layer(6)),
     ("testkit", Class::Testkit),
     // L7 apps and tooling
     ("photocraft", Class::Exempt),
