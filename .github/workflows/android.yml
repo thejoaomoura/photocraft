@@ -1,20 +1,21 @@
 name: Android
 
-# Builds the lightweight mobile app's native library (`crates/mobile-ffi`): the engine for Android
-# (arm64 phones, x86_64 emulators) plus its Kotlin bindings, uploaded as one artifact that drops
-# into the Android project (`jniLibs/` and `java/`).
+# Builds the lightweight Android app: first its native library (`crates/mobile-ffi`, the engine
+# for arm64 phones and x86_64 emulators) plus the Kotlin bindings, then the APKs (`android/`).
 
 on:
   push:
     branches: [main, "feat/android-*"]
     paths:
       - "crates/**"
+      - "android/**"
       - "Cargo.toml"
       - "Cargo.lock"
       - ".github/workflows/android.yml"
   pull_request:
     paths:
       - "crates/**"
+      - "android/**"
       - "Cargo.toml"
       - "Cargo.lock"
       - ".github/workflows/android.yml"
@@ -87,4 +88,34 @@ jobs:
         with:
           name: photocraft-mobile-android
           path: dist/android
+          if-no-files-found: error
+
+  apk:
+    name: build APK
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: photocraft-mobile-android
+          path: dist/android
+      # The Rust job's outputs go where app/build.gradle.kts › cargoBuild would put them.
+      - name: Stage engine library and bindings
+        run: |
+          mkdir -p android/app/src/main/jniLibs android/app/src/generated/kotlin
+          cp -r dist/android/jniLibs/. android/app/src/main/jniLibs/
+          cp -r dist/android/java/. android/app/src/generated/kotlin/
+      - name: Assemble
+        working-directory: android
+        run: ./gradlew assembleDebug assembleRelease -Pphotocraft.skipRust=true -Pphotocraft.abis=arm64-v8a,x86_64 --console=plain
+      - uses: actions/upload-artifact@v4
+        with:
+          name: photocraft-android-apk
+          path: android/app/build/outputs/apk/**/*.apk
           if-no-files-found: error

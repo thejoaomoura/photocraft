@@ -4603,10 +4603,12 @@ dependencies = [
 name = "photocraft-mobile-ffi"
 version = "0.8.2"
 dependencies = [
+ "photocraft-color",
  "photocraft-compose",
  "photocraft-doc",
  "photocraft-engine",
  "photocraft-format",
+ "photocraft-geom",
  "photocraft-io",
  "serde_json",
  "thiserror 2.0.21",

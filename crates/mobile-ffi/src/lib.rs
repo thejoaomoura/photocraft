@@ -20,14 +20,14 @@ uniffi::setup_scaffolding!();
 pub enum MobileError {
     #[error("no document is open")]
     NoDocument,
-    #[error("{message}")]
-    InvalidInput { message: String },
+    #[error("{reason}")]
+    InvalidInput { reason: String },
     #[error("{width}×{height} is larger than the {max_pixels}-pixel limit of this device")]
     TooLarge { width: u32, height: u32, max_pixels: u64 },
-    #[error("{message}")]
-    Io { message: String },
-    #[error("{message}")]
-    Command { message: String },
+    #[error("{reason}")]
+    Io { reason: String },
+    #[error("{reason}")]
+    Command { reason: String },
 }
 
 /// The active document at a glance.
@@ -145,6 +145,22 @@ impl PhotoSession {
     /// The composite scaled to fit `max_side` (0 = full size, capped at 4096).
     pub fn render(&self, max_side: u32) -> Result<RenderedImage, MobileError> {
         self.lock().render(max_side)
+    }
+
+    /// A document area (`x, y, width, height` in document pixels) reduced to fit
+    /// `out_width`×`out_height`: the sharp view when zoomed in.
+    pub fn render_region(&self, x: i32, y: i32, width: u32, height: u32, out_width: u32, out_height: u32) -> Result<RenderedImage, MobileError> {
+        self.lock().render_region(x, y, width, height, out_width, out_height)
+    }
+
+    /// One layer alone (Layers panel thumbnail), scaled to fit `max_side` (≤ 512).
+    pub fn layer_thumbnail(&self, layer_id: u64, max_side: u32) -> Result<RenderedImage, MobileError> {
+        self.lock().layer_thumbnail(layer_id, max_side)
+    }
+
+    /// An overlay dimming what is outside the selection (`null` when nothing is selected).
+    pub fn selection_overlay(&self, max_side: u32) -> Result<Option<RenderedImage>, MobileError> {
+        self.lock().selection_overlay(max_side)
     }
 
     /// Encode the active document (`pcraft`, `psd`, `png`, `jpg`, `webp`, `tiff`, …).

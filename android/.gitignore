@@ -1,0 +1,10 @@
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+.kotlin/
+captures/
+# Built from crates/mobile-ffi (app/build.gradle.kts › cargoBuild, or the CI artifact)
+app/src/main/jniLibs/
+app/src/generated/

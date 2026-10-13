@@ -37,22 +37,28 @@ rustup target add aarch64-linux-android x86_64-linux-android
 cargo install cargo-ndk
 ```
 
-The `.so` for a phone (arm64) and the emulator (x86_64), written into the Android project's
-`jniLibs`:
+The Android app in [`android/`](../../android) builds this crate itself: its `preBuild` runs
+`cargo ndk` (the `.so` into `app/src/main/jniLibs`) and `uniffi-bindgen` (the Kotlin bindings into
+`app/src/generated/kotlin`). See [`android/README.md`](../../android/README.md).
+
+By hand, the `.so` for a phone (arm64) and the emulator (x86_64):
 
 ```bash
-cargo ndk -t arm64-v8a -t x86_64 -o ../photocraft-android/app/src/main/jniLibs build -p photocraft-mobile-ffi --release
+cargo ndk -t arm64-v8a -t x86_64 -o android/app/src/main/jniLibs build -p photocraft-mobile-ffi --release
 ```
 
 The Kotlin bindings, generated from a host build of the same library:
 
 ```bash
-cargo build -p photocraft-mobile-ffi --release
-cargo run -p photocraft-mobile-ffi --features bindgen --bin uniffi-bindgen -- generate --library target/release/photocraft_mobile.dll --language kotlin --out-dir ../photocraft-android/app/src/main/java
+cargo build -p photocraft-mobile-ffi --lib
+cargo run -p photocraft-mobile-ffi --features bindgen --bin uniffi-bindgen -- generate --library target/debug/photocraft_mobile.dll --language kotlin --out-dir android/app/src/generated/kotlin
 ```
 
 (`libphotocraft_mobile.so` on Linux, `libphotocraft_mobile.dylib` on macOS.) The generated code
 needs JNA on the Android side: `implementation("net.java.dev.jna:jna:5.17.0@aar")`.
+
+Error variants carry their text in `reason`, not `message`: a `message` field would clash with
+Kotlin's `Throwable.message`.
 
 ## Layering and safety
 
